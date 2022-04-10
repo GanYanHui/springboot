@@ -12,12 +12,13 @@
 
     <el-dropdown style="width: 150px; cursor: pointer; text-align: right">
       <div style="display: inline-block">
-        <img src="" alt="" style="width: 30px; border-radius: 50%; position: relative; top: 10px; right: 5px">
+        <img :src="user.avatarUrl" alt="" style="width: 30px; border-radius: 50%; position: relative; top: 10px; right: 5px">
         <span>{{ user.username }}<i class="el-icon-caret-bottom" style="margin-left: 5px"></i></span>
       </div>
       <el-dropdown-menu slot="dropdown" style="width: 70px; text-align: center">
         <el-dropdown-item style="font-size: 14px; padding: 5px 0">
-          <router-link to="/person">个人信息</router-link></el-dropdown-item>
+          <router-link to="/person">个人信息</router-link>
+        </el-dropdown-item>
         <el-dropdown-item style="font-size: 14px; padding: 5px 0">
           <span style="text-decoration: none" @click="logout">退出</span>
         </el-dropdown-item>
@@ -31,7 +32,8 @@ export default {
   name: "Header",
   props: {
     collapseBtnClass: String,
-    collapse: Function
+    collapse: Function,
+    user: Object
   },
   data(){
     return {
