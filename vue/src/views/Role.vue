@@ -83,13 +83,16 @@
           :data="menuData"
           show-checkbox
           node-key="id"
-          :default-expanded-keys="[2]"
-          :default-checked-keys="[3, 4, 5, 6]"
-          @check-change="handleCheckChange">
+          ref="tree"
+          :default-expanded-keys="expends"
+          :default-checked-keys="checks " >
+        <span class="custom-tree-node" slot-scope="{ node, data }">
+            <span><i :class="data.icon"></i> {{ data.name }}</span>
+         </span>
       </el-tree>
       <div slot="footer" class="dialog-footer">
         <el-button @click="noSave">取 消</el-button>
-        <el-button type="primary" @click="save">确 定</el-button>
+        <el-button type="primary" @click="saveRoleMenu">确 定</el-button>
       </div>
     </el-dialog>
   </div>
@@ -114,6 +117,9 @@ export default {
       props: {
         label: 'name',
       },
+      expends: [],
+      checks: [],
+      roleId: 0,
     }
   },
   created() {
@@ -144,6 +150,16 @@ export default {
         }
       })
     },
+    saveRoleMenu(){
+      this.request.post("/role/roleMenu/" + this.roleId, this.$refs.tree.getCheckedKeys()).then(res => {
+        if(res.code === '200'){
+          this.$message.success("绑定成功")
+          this.menuDialogVis = false
+        }else{
+          this.$message.error(res.msg)
+        }
+      })
+    },
     noSave(){
       this.dialogFormVisible = false
       this.menuDialogVis = false
@@ -154,7 +170,7 @@ export default {
       this.form = {}
     },
     handleEdit(row){//编辑
-      this.form = row
+      this.form = JSON.parse(JSON.stringify(row))
       this.dialogFormVisible = true
     },
     del(id){//删除
@@ -196,20 +212,28 @@ export default {
     },
     selectMenu(roleId){
       this.menuDialogVis = true
+      this.roleId = roleId
 
       //请求菜单数据
       this.request.get("/menu").then(res => {
         this.menuData = res.data
+
+        //把后台返回的菜单数据处理成id数组
+        this.expends = this.menuData.map(v => v.id)
       })
-    },
-    handleCheckChange(data, checked, indeterminate) {
-      console.log(data, checked, indeterminate);
+
+      //请求该角色拥有的菜单权限列表
+      this.request.get("/role/roleMenu/" + roleId).then(res => {
+        console.log(res)
+        this.checks = res.data
+      })
+
     },
   }
 }
 </script>
 
-<style scoped>
+<style>
 .headerBg{
   background: #eee !important;
 }

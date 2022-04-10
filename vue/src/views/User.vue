@@ -152,7 +152,7 @@ export default {
       this.form = {}
     },
     handleEdit(row){//编辑
-      this.form = row
+      this.form = JSON.parse(JSON.stringify(row))
       this.dialogFormVisible = true
     },
     del(id){//删除
@@ -205,7 +205,7 @@ export default {
 }
 </script>
 
-<style scoped>
+<style>
 .headerBg{
   background: #eee !important;
 }

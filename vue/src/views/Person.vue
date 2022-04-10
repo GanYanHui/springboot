@@ -80,7 +80,7 @@ export default {
 }
 </script>
 
-<style scoped>
+<style>
 .avatar-uploader {
   text-align: center;
   padding-bottom: 10px;
