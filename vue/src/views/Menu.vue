@@ -30,6 +30,7 @@
       <el-table-column prop="id" label="ID" width="80"></el-table-column>
       <el-table-column prop="name" label="名称"></el-table-column>
       <el-table-column prop="path" label="路径"></el-table-column>
+      <el-table-column prop="pagePath" label="页面路径"></el-table-column>
       <el-table-column label="图标" class-name="fontSize18" align="center" label-class-name="fontSize12">
         <template slot-scope="scope">
           <span :class="scope.row.icon" />
@@ -56,13 +57,16 @@
     </el-table>
 
     <!-- 点击新增弹出对话框 -->
-    <el-dialog title="角色信息" :visible.sync="dialogFormVisible" width="33%">
+    <el-dialog title="菜单信息" :visible.sync="dialogFormVisible" width="33%">
       <el-form label-width="80px" size="small">
         <el-form-item label="名称">
           <el-input v-model="form.name" autocomplete="off"></el-input>
         </el-form-item>
         <el-form-item label="路径">
           <el-input v-model="form.path" autocomplete="off"></el-input>
+        </el-form-item>
+        <el-form-item label="页面路径">
+          <el-input v-model="form.pagePath" autocomplete="off"></el-input>
         </el-form-item>
         <el-form-item label="图标">
           <el-select clearable v-model="form.icon" placeholder="请选择" style="width: 100%">
@@ -92,6 +96,7 @@ export default {
       tableData: [],
       name: "",
       path: "",
+      pagePath: "",
       icon: "",
       description: "",
       form: {},
@@ -113,6 +118,11 @@ export default {
       }).then(res => {
         this.tableData = res.data
       })
+
+      //请求图标的数据
+      this.request.get("/menu/icons").then(res => {
+        this.options = res.data
+      })
     },
     save(){//新增或修改后保存
       this.request.post("/menu", this.form).then(res => {
@@ -124,6 +134,7 @@ export default {
           this.$message.error("保存失败")
         }
       })
+
     },
     noSave(){
       this.dialogFormVisible = false
@@ -139,12 +150,6 @@ export default {
     handleEdit(row){//编辑
       this.form = JSON.parse(JSON.stringify(row))
       this.dialogFormVisible = true
-
-      //请求图标的数据
-      this.request.get("/menu/icons").then(res => {
-        this.options = res.data
-      })
-
     },
     del(id){//删除
       this.request.delete("/menu/" + id).then(res => {

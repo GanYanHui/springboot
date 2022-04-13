@@ -1,6 +1,9 @@
 package com.gyh.springboot.controller.dto;
 
+import com.gyh.springboot.entity.Menu;
 import lombok.Data;
+
+import java.util.List;
 
 /**
  * 接受前端登录请求的参数
@@ -12,4 +15,6 @@ public class UserDTO {
     private String nickname;
     private String avatar;
     private String token;
+    private String role;
+    private List<Menu> menus;
 }

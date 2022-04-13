@@ -11,7 +11,7 @@ import lombok.Setter;
 
 /**
  * <p>
- * 
+ *
  * </p>
  *
  * @author 甘延辉
@@ -34,6 +34,9 @@ public class Role implements Serializable {
 
       @ApiModelProperty("描述")
       private String description;
+
+      @ApiModelProperty("唯一标识")
+      private String flag;
 
 
 }

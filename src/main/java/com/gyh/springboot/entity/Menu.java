@@ -50,4 +50,7 @@ public class Menu implements Serializable {
       @ApiModelProperty("父级ID")
       private Integer pid;
 
+      @ApiModelProperty("页面路径")
+      private String pagePath;
+
 }
