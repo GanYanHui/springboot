@@ -23,7 +23,7 @@
       >
         <el-button type="danger" slot="reference">批量删除<i class="el-icon-remove-outline"></i></el-button>
       </el-popconfirm>
-      <el-upload action="http://localhost:9090/user/import" :show-file-list="false" accept="xlsx" :on-success="handleExcelImportSuccess" style="display: inline-block">
+      <el-upload :action="'http://' + serverIp + ':9090/user/import'" :show-file-list="false" accept="xlsx" :on-success="handleExcelImportSuccess" style="display: inline-block">
         <el-button type="primary" class="ml-5">导入 <i class="el-icon-bottom"></i></el-button>
       </el-upload>
       <el-button type="primary" @click="exp" class="ml-5">导出<i class="el-icon-top"></i></el-button>
@@ -34,13 +34,21 @@
       <el-table-column type="selection" width="55"></el-table-column>
       <el-table-column prop="id" label="ID" width="80"></el-table-column>
       <el-table-column prop="username" label="用户名" width="140"></el-table-column>
-      <el-table-column prop="role" label="角色"></el-table-column>
+      <el-table-column prop="role" label="角色">
+        <template slot-scope="scope">
+          <el-tag type="primary" v-if="scope.row.role === 'ROLE_ADMIN'">管理员</el-tag>
+          <el-tag type="warning" v-if="scope.row.role === 'ROLE_TEACHER'">老师</el-tag>
+          <el-tag type="success" v-if="scope.row.role === 'ROLE_STUDENT'">学生</el-tag>
+        </template>
+      </el-table-column>
       <el-table-column prop="nickname" label="昵称" width="120"></el-table-column>
       <el-table-column prop="email" label="邮箱"></el-table-column>
       <el-table-column prop="phone" label="电话"></el-table-column>
       <el-table-column prop="address" label="地址"></el-table-column>
-      <el-table-column label="操作">
+      <el-table-column label="操作" width="330" aligb="center">
         <template slot-scope="scope">
+          <el-button type="primary" @click="lookCourse(scope.row.courses)" v-if="scope.row.role === 'ROLE_TEACHER'">查看教学课程 <i class="el-icon-document"></i></el-button>
+          <el-button type="warning" @click="lookStuCourse(scope.row.stuCourses)" v-if="scope.row.role === 'ROLE_STUDENT'">查看已选课程 <i class="el-icon-document"></i></el-button>
           <el-button type="success" @click="handleEdit(scope.row)">编辑<i class="el-icon-edit ml-5"></i></el-button>
           <el-popconfirm
               class="ml-5"
@@ -99,14 +107,34 @@
         <el-button type="primary" @click="save">确 定</el-button>
       </div>
     </el-dialog>
+
+    <!--  老师查看授课信息  -->
+    <el-dialog title="课程信息" :visible.sync="vis" width="33%">
+      <el-table :data="courses" border stripe>
+        <el-table-column prop="name" label="课程名称"></el-table-column>
+        <el-table-column prop="score" label="学分"></el-table-column>
+      </el-table>
+    </el-dialog>
+
+    <!--  学生查看选课信息  -->
+    <el-dialog title="课程信息" :visible.sync="stuVis" width="33%" >
+      <el-table :data="stuCourses" border stripe>
+        <el-table-column prop="name" label="课程名称"></el-table-column>
+        <el-table-column prop="score" label="学分"></el-table-column>
+      </el-table>
+    </el-dialog>
+
   </div>
 </template>
 
 <script>
+import {serverIp} from "../../public/config";
+
 export default {
   name: "User",
   data() {
     return {
+      serverIp: serverIp,
       tableData: [],
       total: 0,
       pageNum: 1,
@@ -119,6 +147,10 @@ export default {
       dialogFormVisible: false,//默认不展示新增对话框
       multipleSelection: [],
       roles: [],
+      courses: [],
+      vis: false,
+      stuCourses: [],
+      stuVis: false
     }
   },
   created() {
@@ -126,6 +158,14 @@ export default {
     this.load()
   },
   methods: {
+    lookCourse(courses){
+      this.courses = courses
+      this.vis = true
+    },
+    lookStuCourse(stuCourses) {
+      this.stuCourses = stuCourses
+      this.stuVis = true
+    },
     load(){//加载数据
       this.request.get("/user/page", {
         params: {
@@ -207,7 +247,7 @@ export default {
       this.load()
     },
     exp(){
-      window.open("http://localhost:9090/user/export")
+      window.open('http://localhost:9090/user/export')
     },
     handleExcelImportSuccess() {
       this.$message.success("导入成功")

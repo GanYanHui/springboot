@@ -7,6 +7,7 @@
           :show-file-list="false"
           :on-success="handleAvatarSuccess"
       >
+
         <img v-if="form.avatarUrl" :src="form.avatarUrl" class="avatar">
         <i v-else class="el-icon-plus avatar-uploader-icon"></i>
       </el-upload>
@@ -35,10 +36,14 @@
 </template>
 
 <script>
+import {serverIp} from "../../public/config";
+
+
 export default {
   name: "Person",
   data(){
     return {
+      serverIp: serverIp,
       form: {},
       user: localStorage.getItem("user") ? JSON.parse(localStorage.getItem("user")) : {}
     }

@@ -3,8 +3,10 @@ package com.gyh.springboot.service.impl;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.log.Log;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.gyh.springboot.common.Constants;
 import com.gyh.springboot.controller.dto.UserDTO;
+import com.gyh.springboot.controller.dto.UserPasswordDTO;
 import com.gyh.springboot.entity.Menu;
 import com.gyh.springboot.entity.User;
 import com.gyh.springboot.exception.ServiceException;
@@ -44,6 +46,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
     @Resource
     private IMenuService menuService;
 
+    @Resource
+    private UserMapper userMapper;
+
     @Override
     public UserDTO login(UserDTO userDTO) {
         User one = getUserInfo(userDTO);
@@ -73,6 +78,19 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
             throw new ServiceException(Constants.CODE_600, "用户已存在");
         }
         return one;
+    }
+
+    @Override
+    public void updatePassword(UserPasswordDTO userPasswordDTO) {
+        int update = userMapper.updatePassword(userPasswordDTO);
+        if (update < 1) {
+            throw new ServiceException(Constants.CODE_600, "密码错误");
+        }
+    }
+
+    @Override
+    public Page<User> findPage(Page<User> page, String username, String email, String address) {
+        return userMapper.findPage(page, username, email, address);
     }
 
     private User getUserInfo(UserDTO userDTO) {
