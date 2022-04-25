@@ -46,7 +46,7 @@ public class FileController {
     @PostMapping("/upload")
     public String upload(@RequestParam MultipartFile file) throws IOException {
 
-        String originalFilename = file.getOriginalFilename();
+        String originalFilename = file.getOriginalFilename();//得到文件名
         String type = FileUtil.extName(originalFilename);//得到文件后缀名
         long size = file.getSize();
 
@@ -54,6 +54,7 @@ public class FileController {
         String uuid = IdUtil.fastSimpleUUID();
         String fileUuid = uuid + StrUtil.DOT + type;
 
+        //上传到uploadFile
         File uploadFile = new File(fileUploadPath + fileUuid);
         //判断配置的文件目录是否存在，若不存在则创建一个新的文件目录
         File parentFile = uploadFile.getParentFile();
