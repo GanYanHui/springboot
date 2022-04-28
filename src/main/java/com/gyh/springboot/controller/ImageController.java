@@ -4,17 +4,27 @@ package com.gyh.springboot.controller;
 import cn.hutool.core.io.FileUtil;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.gyh.springboot.common.Constants;
+import com.gyh.springboot.entity.User;
 import com.gyh.springboot.mapper.ImageMapper;
+import com.gyh.springboot.service.IUserService;
+import com.gyh.springboot.utils.ImageUtil;
+import com.gyh.springboot.utils.RSAUtil;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
 import javax.annotation.Resource;
+import javax.imageio.ImageIO;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
 import javax.sql.rowset.serial.SerialBlob;
+import java.awt.image.BufferedImage;
 import java.io.*;
 import java.net.URLEncoder;
+import java.security.interfaces.RSAPrivateKey;
+import java.security.interfaces.RSAPublicKey;
 import java.sql.Blob;
 import java.util.List;
+import java.util.Map;
+
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.gyh.springboot.common.Result;
 
@@ -48,9 +58,41 @@ public class ImageController {
     @Resource
     private IImageService imageService;
 
+    @Resource
+    private IUserService iUserService;
+
     //新增或者更新
     @PostMapping
-    public Result save(@RequestBody Image image){
+    public Result save(@RequestBody Image image) throws IOException {
+
+        //判断传来的数据中是否包括医生id，如果有就用该医生的公钥进行加密
+        Integer id = image.getId();
+        Integer doctorId = image.getDoctorId();
+        if(doctorId != null){
+            try{
+                //获取图像字节数组
+                byte[] datas = (byte[])imageService.getById(id).getImg();
+//                byte[] datas = (byte[])image.getImg();//bug
+
+                //根据doctorId得到该医生的公钥
+                User doctor = iUserService.getById(doctorId);
+                String publicKeyStr = doctor.getPublicKeyStr();
+                RSAPublicKey publicKey = RSAUtil.getPublicKey(publicKeyStr);
+
+                //对图像进行加密
+                byte[] newDatas = RSAUtil.publicEncrypt(datas, publicKey);
+
+                Blob blob = new SerialBlob(newDatas);
+                long encriptSize = blob.length();
+                image.setImg(blob);
+                image.setEncriptsize(encriptSize/1024);
+                image.setIsEncript(true);
+                image.setDoctorId(doctorId);
+
+            }catch (Exception e){
+                return Result.error(Constants.CODE_500, e.toString());
+            }
+        }
         return Result.success(imageService.saveOrUpdate(image));
     }
 
@@ -82,7 +124,6 @@ public class ImageController {
                            @RequestParam(defaultValue = "") String name) {
         QueryWrapper<Image> queryWrapper = new QueryWrapper<>();
         queryWrapper.like("name", name);
-        queryWrapper.orderByDesc("id");
         return Result.success(imageService.page(new Page<>(pageNum, pageSize), queryWrapper));
     }
 
@@ -92,6 +133,7 @@ public class ImageController {
         String originalFilename = file.getOriginalFilename();//得到文件名
         String type = FileUtil.extName(originalFilename);//得到文件后缀名
         long size = file.getSize();
+        System.out.println("原文件大小size = " + size + " B = " + size/1024 + " KB");
 
         try{
             //存储到数据库
@@ -99,11 +141,26 @@ public class ImageController {
             saveImage.setName(originalFilename);
             saveImage.setType(type);
             saveImage.setPresize(size/1024);
-            saveImage.setNextsize(size/1024);
+            saveImage.setIsEncript(false);
 
-            //将图片压缩为字节流，再加密
-            Blob blob = new SerialBlob(file.getBytes());
-            saveImage.setImg(blob);
+            //将图片压缩
+            InputStream inputStream = file.getInputStream();
+            //如果是图片文件就进行压缩
+            if(ImageUtil.isImage(originalFilename)){
+                BufferedImage compressedImage = ImageUtil.compress(ImageIO.read(inputStream));
+
+                ByteArrayOutputStream out = new ByteArrayOutputStream();
+                ImageIO.write(compressedImage, type, out);
+
+                byte[] datas = out.toByteArray();
+
+                Blob blob = new SerialBlob(datas);
+                long newSize = blob.length();
+                saveImage.setImg(blob);
+                saveImage.setNextsize(newSize/1024);
+            }else{
+                return Result.error(Constants.CODE_400, "只能上传图片");
+            }
 
             return Result.success(imageMapper.insert(saveImage));
         }catch (Exception e){
@@ -114,14 +171,14 @@ public class ImageController {
 
 
     /**
-     * 图片下载接口  http://localhost:9090/image/download/{id}
+     * 图片下载接口  http://localhost:9090/image/download/{id}&{userId}
      * @param id
      * @param response
      * @throws IOException
      */
-    @GetMapping("/download/{id}")
-    public void download(@PathVariable Integer id, HttpServletResponse response) throws IOException {
-        //根据图片id获取文件
+    @GetMapping("/download/{id}&{userId}")
+    public void download(@PathVariable Integer id, @PathVariable Integer userId, HttpServletResponse response) throws IOException {
+        //根据图像id获取文件
         Image image = imageService.getById(id);
 
         //设置输出流的格式
@@ -129,10 +186,30 @@ public class ImageController {
         response.addHeader("Content-Disposition", "attachment;filename=" + URLEncoder.encode(image.getName() ,"UTF-8"));
         response.setContentType("application/octet-stream");
 
-        //读取文件的字节流
-        os.write((byte[])image.getImg());
-        os.flush();
-        os.close();
+        //获取图像字节数组
+        byte[] datas = (byte[])image.getImg();
+
+        try {
+            //1.判断图像是否被加密，已加密再进行2，未被加密则直接下载
+            //2.判断加密的doctorId与userId是否相同,相同则获取对应的私钥，不同则下载的图像无法显示
+            if(image.getIsEncript()){//已加密
+                Integer doctorId = image.getDoctorId();
+                if(doctorId.equals(userId)){//相同
+                    User doctor = iUserService.getById(doctorId);//得到医生对象
+                    String privateKeyStr = doctor.getPrivateKeyStr();//获取医生的私钥字符串
+                    RSAPrivateKey privateKey = RSAUtil.getPrivateKey(privateKeyStr);//根据字符串得到私钥
+                    byte[] newDatas = RSAUtil.privateDecrypt(datas, privateKey);//用私钥解密图像
+                    datas = newDatas;
+                }//已加密，但是用别的医生的公钥加密的，也直接下载
+            }//未被加密则直接下载
+        }catch (Exception e){
+            e.printStackTrace();
+        }finally {
+            //读取文件的字节流
+            os.write(datas);
+            os.flush();
+            os.close();
+        }
     }
 
 

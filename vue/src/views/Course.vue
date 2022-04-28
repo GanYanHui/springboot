@@ -35,7 +35,6 @@
       </el-table-column>
       <el-table-column label="操作"  width="280" align="center">
         <template slot-scope="scope">
-          <el-button type="primary" @click="selectCourse(scope.row.id)">选课</el-button>
           <el-button type="success" @click="handleEdit(scope.row)" v-if="user.role === 'ROLE_ADMIN'">编辑 <i class="el-icon-edit"></i></el-button>
           <el-popconfirm
               class="ml-5"

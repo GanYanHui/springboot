@@ -9,8 +9,10 @@ import cn.hutool.poi.excel.ExcelWriter;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.gyh.springboot.common.Constants;
 import com.gyh.springboot.common.Result;
+import com.gyh.springboot.common.RoleEnum;
 import com.gyh.springboot.controller.dto.UserDTO;
 import com.gyh.springboot.controller.dto.UserPasswordDTO;
+import com.gyh.springboot.utils.RSAUtil;
 import com.gyh.springboot.utils.TokenUtils;
 import org.springframework.web.bind.annotation.*;
 import javax.annotation.Resource;
@@ -19,6 +21,8 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.InputStream;
 import java.net.URLEncoder;
 import java.util.List;
+import java.util.Map;
+
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 
 import com.gyh.springboot.service.IUserService;
@@ -65,6 +69,22 @@ public class UserController {
     //新增或者更新
     @PostMapping
     public Result save(@RequestBody User user){
+        //如果user是医生,则尝试获取他的公钥私钥，若没有则新增公钥私钥
+        String role = user.getRole();
+        if(role.equals(RoleEnum.ROLE_DOCTOR.toString())){
+            String publicKeyStr = user.getPublicKeyStr();
+            String privateKeyStr = user.getPrivateKeyStr();
+            if(publicKeyStr == null || privateKeyStr == null || "".equals(publicKeyStr) || "".equals(privateKeyStr)){
+                //1.生成公钥私钥
+                Map<String, String> keyMap = RSAUtil.createKeys(1024);
+                //2.获得公钥私钥的字符串
+                publicKeyStr = keyMap.get("publicKey");
+                privateKeyStr = keyMap.get("privateKey");
+                //3.将公钥私钥赋予该医生
+                user.setPublicKeyStr(publicKeyStr);
+                user.setPrivateKeyStr(privateKeyStr);
+            }
+        }
         return Result.success(userService.saveOrUpdate(user));
     }
 
@@ -120,24 +140,24 @@ public class UserController {
                                @RequestParam(defaultValue = "") String username,
                                @RequestParam(defaultValue = "") String email,
                                @RequestParam(defaultValue = "") String address) {
-//        QueryWrapper<User> queryWrapper = new QueryWrapper<>();
-//        if (!"".equals(username)) {
-//            queryWrapper.like("username", username);
-//        }
-//        if (!"".equals(email)) {
-//            queryWrapper.like("email", email);
-//        }
-//        if (!"".equals(address)) {
-//            queryWrapper.like("address", address);
-//        }
-//        queryWrapper.orderByDesc("id");
-//
+        QueryWrapper<User> queryWrapper = new QueryWrapper<>();
+        if (!"".equals(username)) {
+            queryWrapper.like("username", username);
+        }
+        if (!"".equals(email)) {
+            queryWrapper.like("email", email);
+        }
+        if (!"".equals(address)) {
+            queryWrapper.like("address", address);
+        }
+        queryWrapper.orderByDesc("id");
+
 //        //获取当前用户信息
 //        User currentUser = TokenUtils.getCurrentUser();
 //        if(currentUser != null)
 //            System.out.println("获取当前用户信息=================" + currentUser.getNickname() + "=================");
 
-        return Result.success(userService.findPage(new Page<>(pageNum, pageSize), username, email, address));
+        return Result.success(userService.page(new Page<>(pageNum, pageSize), queryWrapper));
     }
 
     /**

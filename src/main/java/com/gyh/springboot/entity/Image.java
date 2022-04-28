@@ -41,11 +41,18 @@ public class Image implements Serializable {
       @ApiModelProperty("压缩后文件大小(KB)")
       private Long nextsize;
 
+      @ApiModelProperty("加密后文件大小(KB)")
+      private Long encriptsize;
+
       @ApiModelProperty("图片字节流")
       private Object img;
 
       @ApiModelProperty("上传时间")
       private Date uploadTime;
 
+      @ApiModelProperty("是否加密")
+      private Boolean isEncript;
 
+      @ApiModelProperty("用哪个医生的密钥加密了")
+      private Integer doctorId;
 }

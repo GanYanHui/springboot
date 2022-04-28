@@ -9,6 +9,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.gyh.springboot.common.Result;
 import com.gyh.springboot.entity.Files;
 import com.gyh.springboot.mapper.FileMapper;
+import net.coobird.thumbnailator.Thumbnails;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -18,6 +19,7 @@ import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URLEncoder;
 import java.util.List;
 
@@ -48,7 +50,7 @@ public class FileController {
 
         String originalFilename = file.getOriginalFilename();//得到文件名
         String type = FileUtil.extName(originalFilename);//得到文件后缀名
-        long size = file.getSize();
+        long preSize = file.getSize();//压缩前大小(B)
 
         //定义一个文件唯一的标识码
         String uuid = IdUtil.fastSimpleUUID();
@@ -71,7 +73,8 @@ public class FileController {
             url = dbFiles.getUrl();
         } else {
             // 上传文件到磁盘
-            file.transferTo(uploadFile);
+            Thumbnails.of(file.getInputStream()).scale(0.8f).outputFormat("jpg").outputQuality(0.5).toFile(fileUploadPath + uuid);
+//            file.transferTo(uploadFile);
             // 数据库若不存在重复文件，则不删除刚才上传的文件
             url = "http://" + serverIp + ":9090/file/" + fileUuid;
         }
@@ -80,7 +83,7 @@ public class FileController {
         Files saveFile = new Files();
         saveFile.setName(originalFilename);
         saveFile.setType(type);
-        saveFile.setSize(size/1024);
+        saveFile.setSize(preSize/1024);//压缩前大小
         saveFile.setUrl(url);
         saveFile.setMd5(md5);
         fileMapper.insert(saveFile);

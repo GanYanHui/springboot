@@ -37,8 +37,8 @@
       <el-table-column prop="role" label="角色">
         <template slot-scope="scope">
           <el-tag type="primary" v-if="scope.row.role === 'ROLE_ADMIN'">管理员</el-tag>
-          <el-tag type="warning" v-if="scope.row.role === 'ROLE_TEACHER'">老师</el-tag>
-          <el-tag type="success" v-if="scope.row.role === 'ROLE_STUDENT'">学生</el-tag>
+          <el-tag type="warning" v-if="scope.row.role === 'ROLE_DOCTOR'">医生</el-tag>
+          <el-tag type="success" v-if="scope.row.role === 'ROLE_MEDICAL_EXAMINER'">医学检查员</el-tag>
         </template>
       </el-table-column>
       <el-table-column prop="nickname" label="昵称" width="120"></el-table-column>
@@ -47,8 +47,6 @@
       <el-table-column prop="address" label="地址"></el-table-column>
       <el-table-column label="操作" width="330" aligb="center">
         <template slot-scope="scope">
-          <el-button type="primary" @click="lookCourse(scope.row.courses)" v-if="scope.row.role === 'ROLE_TEACHER'">查看教学课程 <i class="el-icon-document"></i></el-button>
-          <el-button type="warning" @click="lookStuCourse(scope.row.stuCourses)" v-if="scope.row.role === 'ROLE_STUDENT'">查看已选课程 <i class="el-icon-document"></i></el-button>
           <el-button type="success" @click="handleEdit(scope.row)">编辑<i class="el-icon-edit ml-5"></i></el-button>
           <el-popconfirm
               class="ml-5"
@@ -86,7 +84,7 @@
         </el-form-item>
         <el-form-item label="角色">
           <el-select clearable v-model="form.role" placeholder="请选择角色" style="width: 100%">
-            <el-option v-for="item in roles" :key="item.name" :label="item.name" :value="item.flag"></el-option>
+            <el-option v-for="item in roles" :key="item.id" :label="item.name" :value="item.flag"></el-option>
           </el-select>
         </el-form-item>
         <el-form-item label="昵称">
@@ -106,22 +104,6 @@
         <el-button @click="noSave">取 消</el-button>
         <el-button type="primary" @click="save">确 定</el-button>
       </div>
-    </el-dialog>
-
-    <!--  老师查看授课信息  -->
-    <el-dialog title="课程信息" :visible.sync="vis" width="33%">
-      <el-table :data="courses" border stripe>
-        <el-table-column prop="name" label="课程名称"></el-table-column>
-        <el-table-column prop="score" label="学分"></el-table-column>
-      </el-table>
-    </el-dialog>
-
-    <!--  学生查看选课信息  -->
-    <el-dialog title="课程信息" :visible.sync="stuVis" width="33%" >
-      <el-table :data="stuCourses" border stripe>
-        <el-table-column prop="name" label="课程名称"></el-table-column>
-        <el-table-column prop="score" label="学分"></el-table-column>
-      </el-table>
     </el-dialog>
 
   </div>
@@ -147,10 +129,6 @@ export default {
       dialogFormVisible: false,//默认不展示新增对话框
       multipleSelection: [],
       roles: [],
-      courses: [],
-      vis: false,
-      stuCourses: [],
-      stuVis: false
     }
   },
   created() {

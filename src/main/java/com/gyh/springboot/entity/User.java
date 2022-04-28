@@ -60,6 +60,12 @@ public class User implements Serializable {
       @ApiModelProperty("角色")
       private String role;
 
+      @ApiModelProperty("公钥")
+      private String publicKeyStr;
+
+      @ApiModelProperty("私钥")
+      private String privateKeyStr;
+
       @TableField(exist = false)
       private List<Course> courses;
 

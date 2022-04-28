@@ -16,6 +16,7 @@ import springfox.documentation.spi.DocumentationType;
 import springfox.documentation.spring.web.plugins.Docket;
 import springfox.documentation.spring.web.plugins.WebFluxRequestHandlerProvider;
 import springfox.documentation.spring.web.plugins.WebMvcRequestHandlerProvider;
+import springfox.documentation.swagger2.annotations.EnableSwagger2;
 
 import java.lang.reflect.Field;
 import java.util.List;
@@ -23,6 +24,7 @@ import java.util.stream.Collectors;
 
 @Configuration// 相当于Spring配置中的<beans>
 @EnableOpenApi// 开启Swagger自定义接口文档
+@EnableSwagger2
 public class SwaggerConfig {
 
 
@@ -99,4 +101,3 @@ public class SwaggerConfig {
 
 
 }
-

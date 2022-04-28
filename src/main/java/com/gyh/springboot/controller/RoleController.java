@@ -64,7 +64,6 @@ public class RoleController {
                            @RequestParam String name) {
         QueryWrapper<Role> queryWrapper = new QueryWrapper<>();
         queryWrapper.like("name", name);
-        queryWrapper.orderByDesc("id");
         return Result.success(roleService.page(new Page<>(pageNum, pageSize), queryWrapper));
     }
 
