@@ -1,12 +1,19 @@
 server:
+#  ip: 47.113.189.231
+  ip: localhost
   port: 9090
 
 spring:
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
     url: jdbc:mysql://localhost:3306/gyh?serverTimezone=GMT%2b8
+#    url: jdbc:mysql://47.113.189.231:3306/gyh?serverTimezone=GMT%2b8
     username: root
     password: 123456
+  mvc:
+    pathmatch:
+      matching-strategy: ANT_PATH_MATCHER
+
 mybatis:
   mapper-locations: classpath:mapper/*.xml #扫描所有mybatis的xml文件
 #  configuration:
@@ -18,3 +25,4 @@ mybatis-plus:
 files:
   upload:
     path: D:/learning/毕设/workspace/小白做毕设/files/
+#    path: /home/files/
