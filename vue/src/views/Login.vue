@@ -49,7 +49,7 @@ export default {
 
               //动态设置当前用户的路由
               setRoutes()
-              this.$router.push("/")
+              this.$router.push("/home")
               this.$message.success("登录成功")
             }else{
               this.$message.error(res.msg)

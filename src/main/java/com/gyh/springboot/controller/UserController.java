@@ -70,6 +70,7 @@ public class UserController {
     @PostMapping
     public Result save(@RequestBody User user){
         //如果user是医生,则尝试获取他的公钥私钥，若没有则新增公钥私钥
+        //如果user不是医生，则删除他的公钥私钥
         String role = user.getRole();
         if(role.equals(RoleEnum.ROLE_DOCTOR.toString())){
             String publicKeyStr = user.getPublicKeyStr();
@@ -84,6 +85,9 @@ public class UserController {
                 user.setPublicKeyStr(publicKeyStr);
                 user.setPrivateKeyStr(privateKeyStr);
             }
+        }else{
+            user.setPublicKeyStr("");
+            user.setPrivateKeyStr("");
         }
         return Result.success(userService.saveOrUpdate(user));
     }
@@ -180,6 +184,7 @@ public class UserController {
         writer.addHeaderAlias("address", "地址");
         writer.addHeaderAlias("createTime", "创建时间");
         writer.addHeaderAlias("avatarUrl", "头像");
+        writer.addHeaderAlias("role", "角色");
 
         // 一次性写出list内的对象到excel，使用默认样式，强制输出标题
         writer.write(list, true);
@@ -220,6 +225,7 @@ public class UserController {
             user.setPhone(row.get(4).toString());
             user.setAddress(row.get(5).toString());
             user.setAvatarUrl(row.get(6).toString());
+            user.setRole(row.get(7).toString());
             users.add(user);
         }
 

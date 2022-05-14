@@ -46,7 +46,8 @@ export const setRoutes = () => {
     const currentRouteNames  = router.getRoutes().map(v => v.name)
     if (!currentRouteNames.includes('Manage')) {
       // 拼装动态路由
-      const manageRoute = { path: '/', name: 'Manage', component: () => import('../views/Manage.vue'), redirect: "/home", children: [
+      const manageRoute = { path: '/', name: 'Manage', component: () => import('../views/Manage.vue'), redirect: "/login",
+        children: [
           { path: 'person', name: '个人信息', component: () => import('../views/Person.vue')},
           { path: 'password', name: '修改密码', component: () => import('../views/Password.vue')}
         ] }

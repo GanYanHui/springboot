@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.annotation.TableId;
 import java.io.Serializable;
 import java.util.Date;
 
+import com.baomidou.mybatisplus.annotation.TableName;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Getter;
@@ -20,12 +21,13 @@ import lombok.Setter;
  */
 @Getter
 @Setter
+@TableName("sys_image")
   @ApiModel(value = "Image对象", description = "")
 public class Image implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-      @ApiModelProperty("id")
+      @ApiModelProperty("ID")
         @TableId(value = "id", type = IdType.AUTO)
       private Integer id;
 
@@ -46,6 +48,9 @@ public class Image implements Serializable {
 
       @ApiModelProperty("图片字节流")
       private Object img;
+
+      @ApiModelProperty("文件的md5")
+      private String md5;
 
       @ApiModelProperty("上传时间")
       private Date uploadTime;

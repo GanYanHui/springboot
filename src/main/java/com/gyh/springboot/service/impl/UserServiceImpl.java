@@ -51,7 +51,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
 
     @Override
     public UserDTO login(UserDTO userDTO) {
-        User one = getUserInfo(userDTO);
+        User one = getUserInfo(userDTO);//根据username和password获取user对象
         if(one != null){
             BeanUtil.copyProperties(one, userDTO, true);
             //设置token

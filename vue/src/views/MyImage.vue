@@ -8,7 +8,7 @@
     <div style="margin: 10px 0">
       <el-upload :action="'http://' + serverIp + ':9090/image/upload'" :show-file-list="false"
                  :on-success="handleImageUploadSuccess" style="display: inline-block">
-          <el-button type="primary" class="ml-5">上传图片 <i class="el-icon-top"></i></el-button>
+          <el-button type="primary" class="ml-5" :disabled="user.role !== 'ROLE_MEDICAL_EXAMINER'">上传图片 <i class="el-icon-top"></i></el-button>
       </el-upload>
       <el-popconfirm
           class="ml-5"
@@ -34,14 +34,14 @@
       <el-table-column prop="uploadTime" label="上传时间" :formatter="formatter"></el-table-column>
       <el-table-column label="下载">
         <template slot-scope="scope">
-          <el-button type="primary" @click="lookImage(scope.row.id)">下载</el-button>
+          <el-button type="primary" @click="lookImage(scope.row.id)" :disabled="user.role !== 'ROLE_DOCTOR'">下载</el-button>
           <el-button type="warning" @click="preview(scope.row.id)" :disabled="user.role !== 'ROLE_DOCTOR'">预览</el-button>
         </template>
       </el-table-column>
       <el-table-column label="操作"  width="260" align="center">
         <template slot-scope="scope">
-          <el-button type="success" @click="handleEdit(scope.row)" :disabled="user.role !== 'ROLE_ADMIN'">编辑<i class="el-icon-edit ml-5"></i></el-button>
-          <el-button type="success" @click="handleEncrypt(scope.row)" :disabled="user.role !== 'ROLE_ADMIN'">加密<i class="el-icon-lock ml-5"></i></el-button>
+<!--          <el-button type="success" @click="handleEdit(scope.row)" :disabled="user.role !== 'ROLE_ADMIN'">编辑<i class="el-icon-edit ml-5"></i></el-button>-->
+          <el-button type="success" @click="handleEncrypt(scope.row)" :disabled="user.role !== 'ROLE_MEDICAL_EXAMINER'">加密<i class="el-icon-lock ml-5"></i></el-button>
           <el-popconfirm
               class="ml-5"
               confirm-button-text='确定'
@@ -73,25 +73,25 @@
     <el-dialog title="图像信息" :visible.sync="dialogFormVisible" width="33%">
       <el-form label-width="140px" size="small">
         <el-form-item label="图像名称">
-          <el-input v-model="form.name" autocomplete="off"></el-input>
+          <el-input v-model="form.name" autocomplete="off" disabled></el-input>
         </el-form-item>
         <el-form-item label="图像类型">
-          <el-input v-model="form.type" autocomplete="off"></el-input>
+          <el-input v-model="form.type" autocomplete="off" disabled></el-input>
         </el-form-item>
         <el-form-item label="原图像大小(KB)">
-          <el-input v-model="form.presize" autocomplete="off"></el-input>
+          <el-input v-model="form.presize" autocomplete="off" disabled></el-input>
         </el-form-item>
         <el-form-item label="压缩后图像大小(KB)">
-          <el-input v-model="form.nextsize" autocomplete="off"></el-input>
+          <el-input v-model="form.nextsize" autocomplete="off" disabled></el-input>
         </el-form-item>
         <el-form-item label="加密后图像大小(KB)">
-          <el-input v-model="form.encriptsize" autocomplete="off"></el-input>
+          <el-input v-model="form.encriptsize" autocomplete="off" disabled></el-input>
         </el-form-item>
         <el-form-item label="图像字节流">
-          <el-input v-model="form.img" autocomplete="off"></el-input>
+          <el-input v-model="form.img" autocomplete="off" disabled></el-input>
         </el-form-item>
         <el-form-item label="上传时间">
-          <el-input v-model="form.uploadTime" autocomplete="off"></el-input>
+          <el-input v-model="form.uploadTime" autocomplete="off" disabled></el-input>
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
@@ -215,7 +215,11 @@ export default {
       this.load()
     },
     handleImageUploadSuccess(res) {
-      console.log(res)
+      if (res.code === '200') {
+        this.$message.success("上传成功")
+      }else{
+        this.$message.error(res.msg)
+      }
       this.load()
     },
     formatter(row,column){

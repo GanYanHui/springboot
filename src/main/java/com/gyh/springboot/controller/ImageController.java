@@ -2,6 +2,7 @@ package com.gyh.springboot.controller;
 
 
 import cn.hutool.core.io.FileUtil;
+import cn.hutool.crypto.SecureUtil;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.gyh.springboot.common.Constants;
 import com.gyh.springboot.entity.User;
@@ -23,7 +24,6 @@ import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
 import java.sql.Blob;
 import java.util.List;
-import java.util.Map;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.gyh.springboot.common.Result;
@@ -61,30 +61,32 @@ public class ImageController {
     @Resource
     private IUserService iUserService;
 
-    //新增或者更新
+    //新增或者更新或加密
     @PostMapping
     public Result save(@RequestBody Image image) throws IOException {
 
-        //判断传来的数据中是否包括医生id，如果有就用该医生的公钥进行加密
+        //1.是否被加密了，加密了无需在加密，未加密则判断2
+        //2.判断传来的数据中是否包括医生id，如果有就用该医生的公钥进行加密
+        Boolean isEncript = image.getIsEncript();
         Integer id = image.getId();
         Integer doctorId = image.getDoctorId();
-        if(doctorId != null){
+        if(!isEncript && doctorId != null){//未被加密且传来的数据中包括医生id
             try{
                 //获取图像字节数组
                 byte[] datas = (byte[])imageService.getById(id).getImg();
-//                byte[] datas = (byte[])image.getImg();//bug
+                // 获取图像的md5
+                String md5 = SecureUtil.md5().digestHex(datas);
 
-                //根据doctorId得到该医生的公钥
+                //根据doctorId得到该医生的公钥，对图像进行加密
                 User doctor = iUserService.getById(doctorId);
                 String publicKeyStr = doctor.getPublicKeyStr();
                 RSAPublicKey publicKey = RSAUtil.getPublicKey(publicKeyStr);
-
-                //对图像进行加密
                 byte[] newDatas = RSAUtil.publicEncrypt(datas, publicKey);
 
                 Blob blob = new SerialBlob(newDatas);
                 long encriptSize = blob.length();
                 image.setImg(blob);
+                image.setMd5(md5);
                 image.setEncriptsize(encriptSize/1024);
                 image.setIsEncript(true);
                 image.setDoctorId(doctorId);
@@ -188,6 +190,7 @@ public class ImageController {
 
         //获取图像字节数组
         byte[] datas = (byte[])image.getImg();
+        String md5 = image.getMd5();
 
         try {
             //1.判断图像是否被加密，已加密再进行2，未被加密则直接下载
@@ -195,18 +198,32 @@ public class ImageController {
             if(image.getIsEncript()){//已加密
                 Integer doctorId = image.getDoctorId();
                 if(doctorId.equals(userId)){//相同
+                    //获取医生的私钥解密图像
                     User doctor = iUserService.getById(doctorId);//得到医生对象
                     String privateKeyStr = doctor.getPrivateKeyStr();//获取医生的私钥字符串
                     RSAPrivateKey privateKey = RSAUtil.getPrivateKey(privateKeyStr);//根据字符串得到私钥
                     byte[] newDatas = RSAUtil.privateDecrypt(datas, privateKey);//用私钥解密图像
                     datas = newDatas;
-                }//已加密，但是用别的医生的公钥加密的，也直接下载
-            }//未被加密则直接下载
+                    String md5_a = SecureUtil.md5().digestHex(datas);
+
+                    System.out.println("根据解密的图像得到的md5_a = " + md5_a);
+                    System.out.println("---------------原md5_b = " + md5);
+
+                    if(md5_a.equals(md5))
+                        os.write(datas);
+                }else{
+                    //已加密，但是用别的医生的公钥加密的，提示公钥私钥不匹配，不下载
+                    System.out.println(Result.error(Constants.CODE_600, "公钥私钥不匹配"));
+                }
+            }else{
+                //未被加密则直接下载
+                //读取文件的字节流
+                System.out.println(Result.success());
+                os.write(datas);
+            }
         }catch (Exception e){
             e.printStackTrace();
         }finally {
-            //读取文件的字节流
-            os.write(datas);
             os.flush();
             os.close();
         }
