@@ -7,6 +7,7 @@ import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.exceptions.JWTDecodeException;
 import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.gyh.springboot.common.Constants;
+import com.gyh.springboot.config.AuthAccess;
 import com.gyh.springboot.entity.User;
 import com.gyh.springboot.exception.ServiceException;
 import com.gyh.springboot.service.IUserService;
@@ -28,6 +29,12 @@ public class JwtInterceptor implements HandlerInterceptor {
         //如果不是映射到方法直接通过
         if(!(handler instanceof HandlerMethod)){
             return true;
+        }else{
+            HandlerMethod h = (HandlerMethod) handler;
+            AuthAccess authAccess = h.getMethodAnnotation(AuthAccess.class);
+            if(authAccess != null){
+                return true;
+            }
         }
 
         //执行认证

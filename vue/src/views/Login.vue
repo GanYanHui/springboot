@@ -46,11 +46,14 @@ export default {
             if(res.code == '200'){
               localStorage.setItem("user", JSON.stringify(res.data))//存储用户信息到浏览器
               localStorage.setItem("menus", JSON.stringify(res.data.menus))//存储用户信息到浏览器
-
               //动态设置当前用户的路由
               setRoutes()
-              this.$router.push("/home")
               this.$message.success("登录成功")
+              if(!res.data.role){
+                this.$router.push("/front/home")
+              }else{
+                this.$router.push("/home")
+              }
             }else{
               this.$message.error(res.msg)
             }

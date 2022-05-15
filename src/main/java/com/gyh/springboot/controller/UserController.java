@@ -72,7 +72,7 @@ public class UserController {
         //如果user是医生,则尝试获取他的公钥私钥，若没有则新增公钥私钥
         //如果user不是医生，则删除他的公钥私钥
         String role = user.getRole();
-        if(role.equals(RoleEnum.ROLE_DOCTOR.toString())){
+        if(role != null && role.equals(RoleEnum.ROLE_DOCTOR.toString())){
             String publicKeyStr = user.getPublicKeyStr();
             String privateKeyStr = user.getPrivateKeyStr();
             if(publicKeyStr == null || privateKeyStr == null || "".equals(publicKeyStr) || "".equals(privateKeyStr)){
