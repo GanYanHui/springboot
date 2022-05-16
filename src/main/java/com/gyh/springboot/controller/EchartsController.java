@@ -9,6 +9,7 @@ import com.gyh.springboot.entity.User;
 import com.gyh.springboot.mapper.FileMapper;
 import com.gyh.springboot.service.IUserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -61,6 +62,7 @@ public class EchartsController {
 
     @AuthAccess
     @GetMapping("/file/front/all")
+    @Cacheable(value = "files" ,key = "'frontAll'")
     public Result frontAll() {
         return Result.success(fileMapper.selectList(null));
     }

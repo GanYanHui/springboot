@@ -11,6 +11,8 @@ import com.gyh.springboot.entity.Files;
 import com.gyh.springboot.mapper.FileMapper;
 import net.coobird.thumbnailator.Thumbnails;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -124,11 +126,15 @@ public class FileController {
         return filesList.size() == 0 ? null : filesList.get(0);
     }
 
+    @CachePut(value = "files", key = "'frontAll'")
     @PostMapping("/update")
     public Result update(@RequestBody Files files) {
-        return Result.success(fileMapper.updateById(files));
+        fileMapper.updateById(files);
+        return Result.success(fileMapper.selectList(null));
     }
 
+    //清除一条缓存，key为要清空的数据
+    @CacheEvict(value="files",key="'frontAll'")
     @DeleteMapping("/{id}")
     public Result delete(@PathVariable Integer id) {
         Files files = fileMapper.selectById(id);

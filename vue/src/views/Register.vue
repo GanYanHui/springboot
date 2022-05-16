@@ -55,7 +55,7 @@ export default {
             if(res.code === '200'){
               this.$message.success("注册成功")
               localStorage.setItem("user", JSON.stringify(res.data))//存储用户信息到浏览器
-              this.$router.push("/")
+              this.$router.push("/login")
             }else{
               this.$message.error(res.msg)
             }
