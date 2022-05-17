@@ -1,7 +1,7 @@
 import axios from 'axios';
 import ElementUI from 'element-ui';
 import router from "@/router";
-import {serverIp} from "../../public/config";
+import {serverIp} from  "../../public/config";
 
 const request = axios.create({
     baseURL: "http://localhost:9090",

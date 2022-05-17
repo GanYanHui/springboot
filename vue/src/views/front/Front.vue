@@ -9,24 +9,20 @@
         <div style="flex: 1">欢迎来到医疗图像管理系统</div>
       </div>
       <div style="flex: 1">
-        <el-menu :default-active="'/front/home'" class="el-menu-demo" mode="horizontal" router>
-        <el-menu-item index="/front/home">主页</el-menu-item>
-        <el-menu-item index="/front/video">视频播放</el-menu-item>
-        <el-menu-item index="/front/article">文章列表</el-menu-item>
-        <el-submenu index="2">
-          <template slot="title">我的工作台</template>
-          <el-menu-item index="/front/item1">选项1</el-menu-item>
-          <el-menu-item index="2-2">选项2</el-menu-item>
-          <el-menu-item index="2-3">选项3</el-menu-item>
-          <el-submenu index="2-4">
-            <template slot="title">选项4</template>
-            <el-menu-item index="2-4-1">选项1</el-menu-item>
-            <el-menu-item index="2-4-2">选项2</el-menu-item>
-            <el-menu-item index="2-4-3">选项3</el-menu-item>
+        <el-menu :default-active="'/front/home'" class="el-menu-demo" mode="horizontal"
+                 router
+                 background-color="#FFFFFF"
+                 text-color="#0B0000"
+                 active-text-color="#00DDFF">
+          <el-menu-item index="/front/home">主页</el-menu-item>
+          <el-menu-item index="/front/video">视频播放</el-menu-item>
+          <el-menu-item index="/front/article">文章列表</el-menu-item>
+          <el-submenu index="2">
+            <template slot="title">我的工作台</template>
+            <el-menu-item index="/front/item1">选项1</el-menu-item>
           </el-submenu>
-        </el-submenu>
-        <el-menu-item index="3" disabled>消息中心</el-menu-item>
-        <el-menu-item><a href="https://www.ele.me" target="_blank">订单管理</a></el-menu-item>
+          <el-menu-item index="3" disabled>消息中心</el-menu-item>
+          <el-menu-item><a href="https://www.ele.me" target="_blank">订单管理</a></el-menu-item>
       </el-menu>
       </div>
       <div style="width: 200px">
