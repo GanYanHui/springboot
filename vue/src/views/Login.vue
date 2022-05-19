@@ -69,8 +69,20 @@ export default {
 
 <style>
 .wrapper {
-  height: 100vh;
-  background-image: linear-gradient(to bottom right, #FC466B , #3F5EFB);
-  overflow: hidden;
+  background-image: url("../assets/IMG_20220517_184622.jpg");
+  position:fixed;
+  top: 0;
+  left: 0;
+  width:100%;
+  height:100%;
+  min-width: 1000px;
+  z-index:-10;
+  zoom: 1;
+  background-color: #fff;
+  background-repeat: no-repeat;
+  background-size: cover;
+  -webkit-background-size: cover;
+  -o-background-size: cover;
+  background-position: center 0;
 }
 </style>

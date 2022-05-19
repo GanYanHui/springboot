@@ -31,6 +31,7 @@
       <el-table-column label="下载">
         <template slot-scope="scope">
           <el-button type="primary" @click="download(scope.row.url)">下载</el-button>
+          <el-button type="warning" @click="preview(scope.row.url)">预览</el-button>
         </template>
       </el-table-column>
       <el-table-column label="启用">
@@ -156,6 +157,9 @@ export default {
     },
     download(url) {
       window.open(url)
+    },
+    preview(url) {
+      window.open('https://file.keking.cn/onlinePreview?url=' + encodeURIComponent(window.btoa((url))))
     }
   }
 }

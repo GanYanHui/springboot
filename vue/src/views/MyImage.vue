@@ -21,12 +21,12 @@
       >
         <el-button type="danger" slot="reference" :disabled="user.role !== 'ROLE_ADMIN'">批量删除 <i class="el-icon-remove-outline"></i></el-button>
       </el-popconfirm>
-
+      <el-button class="ml-5" type="success" @click="lookMyselfImages" :disabled="user.role !== 'ROLE_DOCTOR'">查看自己管理的图像</el-button>
     </div>
     <el-table :data="tableData" border stripe :header-cell-class-name="'headerBg'"  @selection-change="handleSelectionChange">
       <el-table-column type="selection" width="40"></el-table-column>
       <el-table-column prop="id" label="ID" width="40"></el-table-column>
-      <el-table-column prop="name" label="图像名称"></el-table-column>
+      <el-table-column prop="name" label="图像名称" width="200"></el-table-column>
       <el-table-column prop="type" label="图像类型" width="70"></el-table-column>
       <el-table-column prop="presize" label="原图像大小(KB)" width="120"></el-table-column>
       <el-table-column prop="nextsize" label="压缩后图像大小(KB)" width="140"></el-table-column>
@@ -35,7 +35,7 @@
       <el-table-column label="下载">
         <template slot-scope="scope">
           <el-button type="primary" @click="lookImage(scope.row.id)" :disabled="user.role !== 'ROLE_DOCTOR'">下载</el-button>
-          <el-button type="warning" @click="preview(scope.row.id)" :disabled="user.role !== 'ROLE_DOCTOR'">预览</el-button>
+<!--          <el-button type="warning" @click="preview(scope.row.id)" :disabled="user.role !== 'ROLE_DOCTOR'">预览</el-button>-->
         </template>
       </el-table-column>
       <el-table-column label="操作"  width="260" align="center">
@@ -146,6 +146,7 @@ export default {
       user: localStorage.getItem("user") ? JSON.parse(localStorage.getItem("user")) : {},
       doctors: [],
       uploadTime: "",
+      roles: [],
     }
   },
   created() {
@@ -168,6 +169,18 @@ export default {
         this.doctors = res.data
       })
 
+    },
+    lookMyselfImages(){
+      this.request.get("/image/myself", {
+        params: {
+          pageNum: this.pageNum,
+          pageSize: this.pageSize,
+          doctorId: this.user.id,
+        }
+      }).then(res => {
+        this.tableData = res.data.records
+        this.total = res.data.total
+      })
     },
     changeEnable(row) {
       this.request.post("/image/update", row).then(res => {

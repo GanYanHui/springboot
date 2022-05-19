@@ -120,6 +120,15 @@ public class ImageController {
         return Result.success(imageService.getById(id));
     }
 
+    @GetMapping("/myself")
+    public Result lookMyselfImages(@RequestParam Integer pageNum,
+                                   @RequestParam Integer pageSize,
+                                   @RequestParam(defaultValue = "") Integer doctorId){
+        QueryWrapper<Image> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("doctor_id", doctorId);
+        return Result.success(imageService.page(new Page<>(pageNum, pageSize), queryWrapper));
+    }
+
     @GetMapping("/page")
     public Result findPage(@RequestParam Integer pageNum,
                            @RequestParam Integer pageSize,
